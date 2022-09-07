@@ -15,6 +15,9 @@ const store = new Vuex.Store({
     },
     ADD_POST(state, payload) {
       state.postList = [payload, ...state.postList]
+    },
+    SET_USERS(state, payload) {
+      state.users = payload;
     }
   },
   actions: {
@@ -24,8 +27,11 @@ const store = new Vuex.Store({
     setCurrPost({ commit }, payload) {
       commit('SET_CURR_POST', { post: payload });
     },
-    addPost({commit}, payload) {
-      commit('ADD_POST', payload)
+    addPost({ commit }, payload) {
+      commit('ADD_POST', payload);
+    },
+    setUsers({ commit }, payload) {
+      commit('SET_USERS', payload);
     }
   },
   getters: {
@@ -34,6 +40,9 @@ const store = new Vuex.Store({
     },
     getCurrPost(state) {
       return state.currentPost;
+    },
+    getUsers(state) {
+      return state.users;
     }
   }
 })

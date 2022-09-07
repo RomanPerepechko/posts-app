@@ -9,6 +9,7 @@
         <div v-if="post.user" class="curr-post__post-author">
             {{post.user.name}} | {{post.user.email}}
         </div>
+        <div v-if="hasPostError" class="curr-post__post-error">Что-то пошло не так...</div>
         <div v-if="isFetchPost" class="curr-post__post-loader">
             <loader></loader>
         </div>
@@ -16,7 +17,8 @@
         <div class="curr-post__comments">
 
             <div class="curr-post__add-comment-form">
-                <n-input :disabled="isAddComm" v-model:value="newCommBody" type="textarea" placeholder="Введите свой комментарий" />
+                <n-input :disabled="isAddComm" v-model:value="newCommBody" type="textarea"
+                    placeholder="Введите свой комментарий" />
                 <n-button :loading="isAddComm" @click="addComm()" tertiary>
                     Добавить
                 </n-button>
@@ -32,6 +34,7 @@
                 <div v-if="isFetchComm" class="curr-post__comm-loader">
                     <loader></loader>
                 </div>
+                <div v-if="hasCommentListError" class="curr-post__comment-error">Что-то пошло не так...</div>
             </div>
 
         </div>
@@ -48,7 +51,7 @@ import CustomHeader from '@/components/custom-header.vue';
 
 export default {
 
-    components:{
+    components: {
         Loader,
         CustomHeader
     },
@@ -59,12 +62,15 @@ export default {
             comments: [],
             isFetchPost: false,
             newCommBody: '',
-            isAddComm: false
+            isAddComm: false,
+            hasPostError: false,
+            hasCommentListError: false,
+            hasNewCommentError: false
         }
     },
 
     mounted() {
-        if(!this.post.title){
+        if (!this.post.title) {
             this.fetchPost();
         }
         this.fetchComments();
@@ -74,27 +80,34 @@ export default {
         ...mapActions([
             'setCurrPost'
         ]),
-        addComm(){
+        addComm() {
             this.isAddComm = true;
-            setTimeout(()=>{
-                this.comments.unshift({id: Math.floor(Math.random*1000), body: this.newCommBody, email:'Ваш email'});
-                this.newCommBody='';
+            setTimeout(() => {
+                this.comments.unshift({ id: Math.floor(Math.random * 1000), body: this.newCommBody, email: 'Ваш email' });
+                this.newCommBody = '';
                 this.isAddComm = false;
             }, 1000)
-            
         },
         async fetchComments() {
             this.isFetchComm = true;
             let comments = await axios.get('https://jsonplaceholder.typicode.com/comments');
-            this.comments = comments.data.slice(0, 25);
+            if(comments.data){
+                this.comments = comments.data.slice(0, 25);
+            }else{
+                this.hasCommentListError = true;
+            }
             this.isFetchComm = false;
         },
-        async fetchPost(){
+        async fetchPost() {
             this.isFetchPost = true;
             let post = await axios.get(`https://jsonplaceholder.typicode.com/posts/${this.$route.params.id}`);
-            let user = await axios.get(`https://jsonplaceholder.typicode.com/users/${post.data.userId}`)
-            post.data.user = user.data;
-            this.setCurrPost(post.data);
+            let user = await axios.get(`https://jsonplaceholder.typicode.com/users/${post.data.userId}`);
+            if (post.data && user.data) {
+                post.data.user = user.data;
+                this.setCurrPost(post.data);
+            }else{
+                this.hasPostError = true;
+            }
             this.isFetchPost = false;
         }
     },
@@ -143,13 +156,13 @@ export default {
         }
     }
 
-    &__comment-list{
+    &__comment-list {
         display: flex;
         flex-direction: column;
         align-items: center;
     }
 
-    &__post-loader{
+    &__post-loader {
         width: 700px;
         display: flex;
         justify-content: center;

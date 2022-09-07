@@ -1,6 +1,7 @@
 <template>
     <custom-header :title="'Add post'"></custom-header>
     <div class="add-post">
+        <div v-if="hasError" class="add-post__error">Что-то пошло не так, попробуйте снова...</div>
         <n-input class="add-post__input" :disabled="isAddPost" v-model:value="post.title" placeholder="Title" />
         <n-input class="add-post__input" :disabled="isAddPost" v-model:value="post.body" placeholder="Body" />
         <n-button class="add-post__btn" :loading="isAddPost" @click="addNewPost" tertiary>
@@ -48,7 +49,8 @@ export default {
                 title: '',
                 body: ''
             },
-            isAddPost: false
+            isAddPost: false,
+            hasError: false
         }
     }
 
